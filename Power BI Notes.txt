@@ -1,0 +1,199 @@
+Power BI
+-----------
+- Business Intelligence tool
+
+Power BI
+-----------
+Power BI Desktop
+	- application for your PC
+
+Power BI Service
+	- cloud based service
+	- share your reports and publish them
+
+
+DAX - Data Analysis eXpression
+------------------------------
+DAX expressions are of two types:
+	- calculated columns
+		create columns in a table
+	- measures
+		expression used in reports
+
+
+Three objects in power bi
+--------------------------
+- table
+- column
+- measure
+
+
+Referencing objects in expressions
+----------------------------------
+Table
+	TableName
+
+Column
+	[ColumnName]
+	TableName[ColumnName]
+
+Measure
+	[Measure]
+
+
+Calendar table
+----------------
+- Important for time-intelligence calculations
+	ytd, yoy, qoq, mom, etc.
+	forecasting
+
+Function:
+CALENDAR( start_date, end_date )
+	- generates all dates from start_date to end_date
+
+DATE(year, month, day)
+	Returns the specified date
+
+
+CALENDAR( DATE(year, month, day), DATE(year, month, day) )
+
+=CALENDAR( DATE(2017, 1, 1), DATE(2019, 12, 31) )
+
+
+
+Syntax for DAX expressions
+---------------------------
+Name = Formula
+
+Object = Formula
+
+Table = Formula
+Column = Formula
+Measure = Formula
+
+Calendar = CALENDAR( DATE(2017, 1, 1), DATE(2019, 12, 31) )
+
+
+9/3/2026:
+	Year: 2026	
+	Month number: 3
+	Month: March
+	Day number: 9
+	Day name: Monday
+	Week day number: 2
+	Week num: 11 (1 - 53)
+
+FORMAT( value, format_code )
+
+= FORMAT( date_value, format_code )
+
+format codes:
+	yyyy	-> Year number
+	m	-> month number (1 - 12)
+	mm	-> month number with leading zero
+				(01 - 12)
+	mmm	-> Short month name
+			Jan, Feb, Mar, ...
+	mmmm	-> Full month name
+			January, February, March, ...
+	d	-> day number (1 - 31)
+	dd	-> day number, leading zero (01 - 31)
+	ddd	-> short day name: Sun, Mon, Tue, ..
+	dddd	-> full day name: Sunday, Monday, ...
+
+
+Name = Formula
+
+Month = FORMAT ( [Date], "MMMM" )
+
+
+Year column
+---------------
+Name = Formula
+Year = Formula
+
+YEAR( date_value)
+	- Returns year number from the specified date
+
+Year = YEAR( [Date] )
+
+
+MonthNum column
+----------------
+Name = Formula
+MonthNum = Formula
+
+MONTH( date_value)
+	- returns month number from the specified date
+
+MonthNum = MONTH ( [Date] )
+
+
+WeekNum column
+---------------
+Name = Formula
+WeekNum = WEEKNUM ( [Date] )
+
+
+Day column
+-----------
+Name = Formula
+Day = FORMAT( [Date], "D" )
+Day = Day( [Date] )
+
+
+WeekdayNum column
+--------------
+WEEKDAY( date_value )
+	Sun - 1, Mon - 2, Tue - 3, ..., Sat - 7
+
+WEEKDAY( date_value, 2 )
+	Mon - 1, Tue - 2, Wed - 3, ..., Sun - 7
+
+WeekdayNum = WEEKDAY ( [Date], 2 )
+
+
+
+
+Weekday column
+---------------
+Name = Formula
+Weekday = Formula
+
+Weekday = FORMAT( [Date], "DDDD" )
+
+
+
+IsWorkday column
+----------------
+IF( condition, if-true, if-false )
+
+	When condition is True it returns 2nd parameter as output
+	When condition is False it returns 3rd parameter as output
+
+Mon - Fri (1 - 5)
+Sat - Sun (6 - 7)
+
+IsWorkday = IF ( [WeekdayNum] <= 5, 1, 0 )
+
+
+
+Formatting column (simply a table)
+===================================
+
+Year:
+	2017, 2018, 2019 -> Text
+		2017, 2018, 2019
+		2019, 2018, 2017
+
+Month:
+	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 -> Text
+		1, 10, 11, 2, 3, 4, 5, 6, 7, 8, 9
+		
+
+
+	1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 2, 20, 21
+
+
+
+
