@@ -196,4 +196,65 @@ Month:
 
 
 
+https://github.com/singamravibabu/batch22
+
+
+
+Working on Billable tasks is called: Utilization
+Target utilization: 80% on billable tasks
+
+Each division, location, employee
+
+
+DATA MODELING
+-------------
+Fact table
+	- is an activity table which changes often unlike other tables
+	- it is always on the many side of the relationship
+	- Answer the question 'What'
+Dimension table
+	- these tables doesn't change often
+	- there are on 'one' side of the relationship
+	- Answers the question 'How'
+	- it groups and filters the 'fact' table
+
+
+DAX Expressions
+-----------------
+- Calculated columns
+	expressions that create columns
+	these use 'row context'
+- Measure
+	expressions that will be used in visuals
+	these use 'filter context' and additionally sometimes 'row context'
+
+row context:
+	in which, an expression is evaluated for each row of a table
+filter context:
+	depends on data model (relationships between tables)
+	depends on visual, slicer, and filters pane
+
+
+
+Name = Formula
+Column = SUM( [Hours] )	-> not row-context
+
+Aggregate functions: SUM, AVERAGE, COUNTA, MIN, MAX, ....
+
+Column 2 = [Hours] / [TotalHours]	-> row-context
+
+
+Column 3 =
+SUMX(
+	FILTER ( ALL('Hours'),
+		[Category] = "Billable" && [EmployeeID] = EARLIER( [EmployeeID] )
+	),
+	[Hours]
+)
+
+
+
+ALL() removes filters: visual, slicer, and filters pane
+
+
 
