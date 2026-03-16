@@ -257,4 +257,68 @@ SUMX(
 ALL() removes filters: visual, slicer, and filters pane
 
 
+Total Rows = COUNTROWS( 'Hours' )
+
+Grand Total Rows = COUNTROWS(  ALL('Hours')  )
+
+
+CALCULATE() filters an expression
+-----------------------------------
+=CALCULATE( expression, filter1, filter2, filter3, ... )
+
+	The expression is filtered by the specified filters
+	Each filter is combined by AND operator
+
+
+Total Hours = SUM( 'Hours'[Hours] )
+
+Total Hours 2 = CALCULATE ( [Total Hours], ALL( 'Hours'[Hours] ) )
+
+
+Total Rows of People = COUNTROWS ( 'People' )
+
+
+
+Column 3 =
+SUMX(
+	FILTER ( ALL('Hours'),
+		[Category] = "Billable" && [EmployeeID] = EARLIER( [EmployeeID] )
+	),
+	[Hours]
+)
+
+Column 4 =
+SUMX(
+	FILTER ( ALL('Hours'),
+		[EmployeeID] = EARLIER( [EmployeeID] )
+	),
+	[Hours]
+)
+
+
+
+FILTER() creates a virtual filtered table in the memory
+-------------------------------------------------------
+=FILTER( table, filter1, filter2, filter3, ... )
+
+
+FILTER ( ALL('Hours'),			--> table
+	[Category] = "Billable" && [EmployeeID] = EARLIER( [EmployeeID] )			--> filter
+	)
+
+
+[EmployeeID] = EARLIER( [EmployeeID] )
+
+
+SUMX, COUNTAX, MINX, MAXX, etc.
+---------------------------------
+Most functions that end with 'X' are iterators.
+Some functions that doesn't end with 'X' are also iterators.
+Some functions which end with 'X' are not iterators.
+
+ITERATOR_FUNCTION( table, expression )
+	- The expression is for each iteration of the function. (for each it takes a row).
+
+=SUMX ( table, expression )
+
 
