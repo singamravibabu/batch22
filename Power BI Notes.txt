@@ -201,7 +201,7 @@ https://github.com/singamravibabu/batch22
 
 
 Working on Billable tasks is called: Utilization
-Target utilization: 80% on billable tasks
+Target utilization: 80% (billable tasks)
 
 Each division, location, employee
 
@@ -279,6 +279,7 @@ Total Rows of People = COUNTROWS ( 'People' )
 
 
 
+
 Column 3 =
 SUMX(
 	FILTER ( ALL('Hours'),
@@ -286,6 +287,8 @@ SUMX(
 	),
 	[Hours]
 )
+
+
 
 Column 4 =
 SUMX(
@@ -320,5 +323,44 @@ ITERATOR_FUNCTION( table, expression )
 	- The expression is for each iteration of the function. (for each it takes a row).
 
 =SUMX ( table, expression )
+
+
+[Column 3]	-> Total Billable hours / per employee
+[Column 4]	-> Total hours / per employee
+
+Total Billable Hours / Total Hours	-> % Utilization
+
+Column 5 = [Column 3] / [Column 4]
+
+Column 5 = DIVIDE( [Column 3], [Column 4], 0 )
+
+
+Budgets and Forecasts
+----------------------
+New column:
+MonthYear = [Month] & "2017"
+
+
+Calendar
+--------
+New Column:
+MonthYear = LEFT( [Month], 3) & [Year]
+
+
+
+MonthYears = DISTINCT( 'Calendar'[MonthYear] )
+
+
+MEASURES
+########
+########
+########
+
+Measure =
+SUMX(
+	FILTER ( 'Hours', [Category] = "Billable" ),
+	[Hours]
+)
+
 
 
