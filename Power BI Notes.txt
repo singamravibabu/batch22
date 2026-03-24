@@ -364,3 +364,144 @@ SUMX(
 
 
 
+Total Hours = SUM( 'Hours'[Hours] )
+
+
+Task1 - 8 hours Billable
+task2 - 8 hours billable
+task3 - 8 hours other
+task4 - 8 hours billable
+day5  - 8 hours (no work)
+
+reported hours = 32
+billable hours = 24
+
+billable hours / reported hours -> 24 / 32 = 0.75 = 75%
+
+billable hours / total hours -> 24 / 40 = 0.6 = 60%
+
+
+Calendar table
+-------------
+New column
+WorkHours = IF( [IsWorkday], 8, 0 )
+
+
+Total Hours = SUM( 'Calendar'[WorkHours] )
+
+% Utilization = [Total Billable Hours] / [Total Hours]
+
+% Utilization = DIVIDE ( [Total Billable Hours] , [Total Hours], 0 )
+
+
+Total Hours by Employee = SUM( 'Calendar'[WorkHours] )
+
+
+Total Hours =
+IF ( HASONEVALUE( 'People'[Name] ),
+	[Total Hours by Employee],
+	SUMX(
+		SUMMARIZE( 'People', 'People'[Name],
+			   "__Hours", [Total Hours by Employee]),
+		[__Hours]
+	)
+)
+
+Name	__Hours
+E1	100
+E2	150
+E3	200
+
+
+
+
+SUM -> No row-context
+	SUM( 'Temporary'[Units] )	-> 39
+
+
+	SUMX( 'Temporary',
+		[Units] )
+
+		10 + 5 + 8 + 12 + 4 	-> 39
+
+Sample = 
+SUMX ( 'Temporary',
+	IF ( [Units] >= 10, [Units] * 3, [Units] )		
+)
+
+		30 + 5 + 8 + 36 + 4
+
+
+% Utilization = 
+VAR __utilization = DIVIDE ( [Total Billable Hours] , [Total Hours], 0 )
+RETURN
+	__utilization + 0
+
+
+
+
+% Utilization = 
+VAR __utilization = DIVIDE ( [Total Billable Hours] , [Total Hours], 0 )
+VAR __days = COUNTROWS( 'Hours' )
+RETURN
+	IF( ISBLANK(__days), BLANK(), __utilization + 0 )
+
+
+
+Checking and troubleshooting calculations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- discover anomalies
+- instances that might throw of the calculations
+
+1. Boundary cases
+	- maximums and minimums of the calculations
+
+2. Slicing
+	- multiple slicers to check the result and boundary cases for the sliced data
+
+
+SWITCH( exp,
+	value1, result1,
+	value2, result2,
+	value3, result3,
+	value4, result4,
+	default_result
+	)
+
+
+
+Total Hours =
+SWITCH( MAX('People'[EmployeeType]),
+	"HOURLY", [Total Billable Hours],
+	"SUB-CONTRACTOR", [Total Billable Hours],
+	"SALARY", IF ( HASONEVALUE( 'People'[Name] ),
+	[Total Hours by Employee],
+	SUMX(
+		SUMMARIZE( 'People', 'People'[Name],
+			   "__Hours", [Total Hours by Employee]),
+		[__Hours]
+	)), BLANK()
+)
+
+
+3. Grouping
+
+
+% Utilization =
+VAR __utilization = DIVIDE ( [Total Billable Hours] , [Total Hours], 0 )
+VAR __days = COUNTROWS( 'Hours' )
+RETURN
+	SWITCH(TRUE(),
+		ISINSCOPE( 'People'[Name] ) && ISBLANK(__days), BLANK(),
+		ISINSCOPE( 'People'[Name] ), __uitilization + 0,
+
+VAR __tempTable = SUMMARIZE( 'People',
+			'People'[Name], "__billableHours",
+	[Total Billable Hours],
+		"__totalHours", [Total Hours] )
+
+VAR __billedHours = SUMX(__tempTable, [__billableHours] )
+VAR __hours= SUMX(__tempTable, [__totalHours])
+RETURN
+	DIVIDE(__billedHours, __hours, 0) )
+
