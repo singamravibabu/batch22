@@ -505,3 +505,32 @@ VAR __hours= SUMX(__tempTable, [__totalHours])
 RETURN
 	DIVIDE(__billedHours, __hours, 0) )
 
+
+
+Table:
+Target Utilization = GENERATESERIES(50, 100, 5)
+
+Measure:
+Target Utilization Value = SELECTEDVALUE( 'Target Utilization'[Target Utilization], 80 )
+
+
+Update Calendar table dates
+---------------------------
+Calendar = CALENDAR( DATE(2017, 1, 1), DATE(2019, 12, 31) )
+
+Calendar = CALENDAR( MIN( 'Hours'[Date] ), MAX ( 'Hours'[Date] ) )
+
+
+
+
+Division Title = 
+	VAR allCount = 3
+	VAR currentCount = COUNTROWS ( SUMMARIZE ('Hours', [Division] ) )
+RETURN
+	SWITCH( TRUE(),
+		HASONEVALUE(Hours[Division]), MAX(Hours[Division]),
+		allCount = currentCount, "All Divisions",
+		"Multiple Divisions"
+)
+
+
