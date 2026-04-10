@@ -1,0 +1,187 @@
+Exploratory Data Analytics (EDA)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Initial analytics before full analytics
+
+
+SECTION 1: Preparing Data for EDA
+---------------------------------
+
+1. Grouping Data
+
+Dataset name: marketing_campaign.csv
+
+Required libraries: NumPy and Pandas
+
+import numpy as np
+import pandas as pd
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+# select the required columns: ID, Year_Birth, Education, Marital_Status, Income, Kidhome, Teenhome, Dt_Customer, Recency, NumStorePurchases, NumWebVisitsMonth
+
+marketing_data = marketing_data[["ID", "Year_Birth", "Education", "Marital_Status", "Income", "Kidhome", "Teenhome", "Dt_Customer", "Receny", "NumStorePurchases", "NumWebVisitsMonth"]]
+
+marketing_data.head(2).T
+marketing_data.dtypes
+marketing_data.shape	# always use this attribute
+
+# grouping
+marketing_data.groupby('Kidhome')['NumStorePurchases'].mean()
+
+
+
+2. Appending data
+
+- Concatenating rows (axis=0, default) -> will have more rows
+	Two are more datasets must have same number of columns and same columns in the same order.
+
+marketing_append1 = pd.read_csv("marketing_campaign_append1.csv")
+marketing_append2 = pd.read_csv("marketing_campaign_append2.csv")
+
+# check whether both dataframes contain same number of columns using shape attribute
+
+# reduce columns
+
+marketing_append1 = marketing_append1[["ID", "Year_Birth", "Education", "Marital_Status", "Income", "Kidhome", "Teenhome", "Dt_Customer", "Receny", "NumStorePurchases", "NumWebVisitsMonth"]]
+
+marketing_append2 = marketing_append2[["ID", "Year_Birth", "Education", "Marital_Status", "Income", "Kidhome", "Teenhome", "Dt_Customer", "Receny", "NumStorePurchases", "NumWebVisitsMonth"]]
+
+# append the two datasets into one dataset
+marketing_appended = pd.concat([marketing_append1, marketing_append2])
+
+marketing_appended.head(5)
+
+
+
+3. Concatenating Data
+
+marketing_concat1 = pd.read_csv("marketing_campaign_concat1.csv")
+marketing_concat2 = pd.read_csv("marketing_campaign_concat2.csv")
+
+# check the shape of the two datasets
+
+marketing_concatenated = pd.concat([marketing_concat1, marketing_concat2], axis=1)
+
+marketking_concatenated.shape
+
+
+
+4. Merging Data
+
+marketing_merge1 = pd.read_csv("marketing_campaign_merge1.csv")
+marketing_merge2 = pd.read_csv("marketing_campaign_merge2.csv")
+
+merged_data = pd.merge(marketing_merge1, marketing_merge2, on="ID")
+
+
+
+5. Sorting Data
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[["ID", "Year_Birth", "Education", "Marital_Status", "Income", "Kidhome", "Teenhome", "Dt_Customer", "Receny", "NumStorePurchases", "NumWebVisitsMonth"]]
+
+# sort the data in descending order
+sorted_data = marketing_data.sort_values('NumStorePurchases', ascending=False)
+
+sorted_data[["ID", "NumStorePurchases"]]
+
+
+
+6. Categorising Data
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[["ID", "Year_Birth", "Education", "Marital_Status", "Income", "Kidhome", "Teenhome", "Dt_Customer", "Receny", "NumStorePurchases", "NumWebVisitsMonth"]]
+
+marketing_data["bins"] = pd.cut(x="NumStorePurchases", bins=[0, 4, 8, 13], labels=["Low", "Medium", "High"])
+
+# marketing_data["bins"] = pd.cut(x=marketing_data["NumStorePurchases"], bins=3, labels=["Low", "Medium", "High"])
+
+marketing_data
+
+
+
+7. Removing Duplicates
+
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[["Education", "Marital_Status", "Kidhome", "Teenhome"]]
+
+marketing_data_duplicate = marketing_data.drop_duplicates()
+
+marketing_data_duplicate
+
+
+
+8. Drop Rows and Columns
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[['ID', 'Year_Birth', 'Education', 'Marital_Status']]
+
+marketing_data = marketing_data[:5]
+
+# dropping rows and columns using the method drop()
+
+# drop rows
+marketing_data.drop(labels=[1], axis=0)
+
+# drop columns
+marketing_data.drop(labels=['Year_Birth'], axis=1)
+
+
+9. Changing the data format
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[['ID', 'Year_Birth', 'Education', 'Income']]
+
+# filling the NA values
+marketing_data["Income"] = marketing_data["Income"].fillna(0)
+
+# change the type of column
+marketing_data["Income_Changed"] = marketing_data["Income"].astype(int)
+
+marketing_data[["Income", "Income_Changed"]].dtypes
+
+
+10. Replacing data
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data["Teenhome_replaced"] = marketing_data["Teenhome"].replace([0, 1, 2], ["has no teen", "has teen", "has teen"])
+
+maketing_data[["Teenhome", "Teenhome_replaced"]]
+
+
+11. Dealing with Missing values
+
+marketing_data = pd.read_csv("marketing_campaign.csv")
+
+marketing_data = marketing_data[['ID', 'Year_Birth', 'Marital_Status', 'Income']]
+
+marketing_data.isnull().sum()
+
+# dropping missing values
+marketing_data_withoutna = marketing_data.dropna(how='any')
+
+
+
+SECTION 2: VISUALIZING DATA
+---------------------------
+
+import matplotlib.pyplot as plt
+
+
+1. Preparing for EDA
+
+housing_prices = pd.read_csv("HousingPricesData.csv")
+
+housing_prices = housing_prices[["Zip", "Price", "Area", "Room"]]
+
+housing_prices["PriceperSqm"] = housing_prices["Price"] / housing_prices["Area"]
+
+# apply all the functions/method to prepare the data
+

@@ -534,3 +534,119 @@ RETURN
 )
 
 
+Measure:
+Target Utilization Value = SELECTEDVALUE( 'Target Utilization'[Target Utilization], 80 )
+
+
+Meets Goal = IF([% Utilization]>=[Target Utilization Value],1,0)
+
+
+
+Branch Title = 
+	VAR allCount = 3
+	VAR currentCount = COUNTROWS ( SUMMARIZE ('People', [Location] ) )
+RETURN
+	SWITCH( TRUE(),
+		HASONEVALUE(People[Location]), MAX(People[Location]),
+		allCount = currentCount, "All Branches",
+		"Multiple Branches"
+)
+
+tmpTable = DISTINCT( 'Hours'[Category] )
+
+
+Type Title = 
+	VAR allCount = 3
+	VAR currentCount = COUNTROWS ( SUMMARIZE ('People', [EmployeeType] ) )
+RETURN
+	SWITCH( TRUE(),
+		HASONEVALUE(People[EmployeeType]), MAX(People[EmployeeType]),
+		allCount = currentCount, "All Type",
+		"Multiple Types"
+)
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MS EXCEL
+~~~~~~~~
+
+Cell references: A1, A2, B10, Z19, MB44, SE99
+
+Types of Cell References:
+1. Relative reference: position
+	A5, B2, K8, M7
+
+2. Absolute reference: address
+	$A$5, $B$2, $K$8, $M$7
+
+3. Mixed references
+	Row absolute: row doesn't change, but column changes
+		A$5, B$2, K$8, M$7
+	Column absolute: column doesn't change, but row changes
+		$A5, $B2, $K8, $M7
+
+
+CONDITIONAL FORMATTING
+=======================
+The formulas that we write in conditional formatting are Boolean formulas:
+	These formulas return True or False
+
+=COUNTIF( range, criteria/value )
+
+	counts the number of occurances of the values in the range, and returns the count number.
+
+=COUNTIF($I$2:$I$16,I2)>=3
+
+=COUNTIF($I$1:$L$16,$I1)>=3
+
+=$J1>70000
+
+=$K1="North"
+
+
+COMBINE CONDITIONS -> AND() / OR() functions
+
+=OR($K1="North",$K1="East")
+
+
+=ROW()	-> Returns the row number of the current row
+
+=MOD(numerator, denominator) -> returns the modulus (remainder)
+
+=IF( condition, if_true, if_false )
+
+=MOD( ROW(), 2) = 0
+=MOD( ROW(), 2) = 1
+
+=MOD(ROW(),3) = 0
+=MOD(ROW(),4) = 0
+=MOD(ROW(),5) = 0
+
+=OR(WEEKDAY($A2)=1,WEEKDAY($A2)=7)
+
+=DAY($A2)=1
+
+day - 1		mon-fri
+day - 1		sat (2 days later)
+day - 1		sun (1 day later)
+
+=AND(WEEKDAY($A2)>1,WEEKDAY($A2)<7,DAY($A2)=1)
+
+
+
+
+=IF(B2<LARGE($B$2:$B$13,3),NA(),B2)
+
+=IF( B2 < LARGE($B$2:$B$13,3) ,  NA(),  B2)
+
+=IF(B2<LARGE($B$2:$B$13,3),B2,NA())
+
+
+
+
+
+
+
