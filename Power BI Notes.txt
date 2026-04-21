@@ -647,6 +647,600 @@ day - 1		sun (1 day later)
 
 
 
+Sort products number of items they are ordered:
+
+SELECT p.product_id, p.product_name
+FROM products AS p
+ORBER BY (
+	SELECT COUNT(*)
+	FROM order_items AS oi
+	WHERE oi.product_id = p.product_id
+	) DESC;
+
+
+
+Sort products by how much they exceed category average:
+
+SELECT p.product_id, p.product_name, p.list_price
+FROM products AS p
+ORDER BY (
+	p.list_price - (
+			SELECT AVG(p2.list_price)
+			FROM products AS p2
+			WHERE p2.product_id = p.product_id
+			)
+	) DESC;
+
+
+Multi-level ordering
+---------------------
+Sort customers by:
+	- Total spending
+	- Number of orders
+
+SELECT c.customer_id, c.first_name
+FROM customers AS c
+ORDER BY (
+	SELECT SUM(oi.quantity * oi.list_price)
+	FROM orders AS o
+	JOIN order_items oi ON o.order_id = oi.order_id
+	WHERE o.customer_id = c.customer_id
+	) DESC,
+	(
+	SELECT COUNT(*)
+	FROM orders o
+	WHERE o.customer_id = c.customer_id
+	) DESC;
+	
+
+
+SELECT column(s)
+FROM table(s)
+ORDER BY column(s)
+
+ORDER BY column1 ASC/DESC, column2 ASC/DESC, column3 ASC/DESC, ...
+
+
+
+CASE column
+	WHEN value1 THEN result1
+	WHEN value2 THEN result2
+	WHEN value3 THEN result3
+	...
+	ELSE default_value
+END
+
+
+Customers who placed orders appear first:
+
+SELECT c.customer_id, c.first_name
+FROM customers AS c
+ORDER BY CASE 
+	WHEN EXISTS 	(
+			SELECT 1
+			FROM orders AS o
+			WHERE o.customer_id = c.customer_id
+			)
+			THEN 1	
+	ELSE 0
+END;
+
+
+
+Sort products contribution to total sales:
+
+Total of all products: 1000000
+Total of p1 product: 85000
+	
+Total of p1 product / Total of all products -> 0.085 (8.5%)
+
+SELECT p.product_id, p.product_name
+FROM products AS p
+ORDER BY (
+		SELECT SUM( oi.quantity * oi.list_price)
+		FROM order_items AS oi
+		WHERE oi.product_id = p.product_id
+	) * 1.0 /
+	(
+		SELECT SUM( oi.quantity * oi.list_price)
+		FROM order_items AS oi
+	) DESC;
+
+
+
+Sort customers by their latest order value.
+
+SELECT c.customer_id, c.first_name
+FROM customers AS c
+ORDER BY (
+	SELECT SUM( oi.quantity * oi.list_price )
+	FROM orders AS o
+	JOIN order_items oi ON o.order_id = oi.order_id
+	WHERE o.customer_id = c.customer_id
+		AND o.order_date = (
+				SELECT MAX( o2.order_date)
+				FROM orders AS o2
+				WHERE o2.customer_id = c.customer_id
+				)
+	) DESC;
+
+
+
+GROUP BY clause
+~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+- To group we use an aggregate function.
+
+SELECT column1, AGG_FUNCTION(column)
+FROM table
+WHERE condition
+GROUP BY column1
+ORDER BY column(s);
+
+
+Number of orders per customer:
+
+SELECT customer_id, COUNT(*) AS order_count
+FROM orders
+GROUP BY customer_id;
+
+
+Total sales per customers:
+
+SELECT o.customer_id, SUM( oi.quantity * oi.list_price)
+FROM orders AS o
+JOIN order_items oi ON o.order_id = oi.order_id
+GROUP BY o.customer_id;
+
+
+Customers with sales above 5000: use HAVING clause
+
+SELECT o.customer_id, SUM( oi.quantity * oi.list_price)
+FROM orders AS o
+JOIN order_items oi ON o.order_id = oi.order_id
+GROUP BY o.customer_id
+HAVING SUM( oi.quantity * oi.list_price ) > 5000;
+
+
+SELECT
+FROM
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+
+
+
+Total sales per product:
+
+SELECT p.product_name, SUM( o.quantity ) AS total_quanity
+FROM products AS p
+JOIN order_items o ON p.product_id = o.product_id
+GROUP BY p.product_name;
+
+
+Number of orders per store:
+
+SELECT store_id, COUNT(*) AS total_orders
+FROM orders
+GROUP BY store_id;
+
+
+
+Customers whose orders are above average:
+
+SELECT c.customer_id, c.fist_name, c.last_name
+FROM customers AS c
+WHERE (
+	SELECT COUNT(*)
+	FROM orders AS o
+	WHERE o.customer_id = c.customer_id
+	)
+		>
+	(
+	SELECT AVG(order_count)
+	FROM 	(
+		SELECT COUNT(*) AS order_count
+		FROM orders AS o
+		GROUP BY customer_id
+		) t
+	);
+
+
+
+UPDATE statement
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+- To update the existing data in a table
+
+Syntax:
+UPDATE table
+SET column = value
+WHERE condition;
+
+With WHERE clause it is dangerous to use UPDATE statement.
+
+UPDATE tblEmployees
+SET salary = 50000
+WHERE first_name='Rajesh';
+
+UPDATE products
+SET list_price = 2000
+WHERE product_id = 10;
+
+
+
+Update multiple columns
+
+UPDATE customers
+SET city = 'Mumbai',
+	state = 'Maharastra'
+WHERE customer_id = 20;
+
+
+Increase the product prices by 10%
+
+UPDATE products
+SET list_price = list_price * 1.1;
+
+
+
+Increase the products from category (category_id) 1 prices by 20%
+
+UPDATE p
+SET list_price = list_price * 1.2
+FROM products AS p
+JOIN categories c ON p.category_id = c.category_id
+WHERE c.category_name = 'Road Bikes';
+
+
+
+Update the products price to their category average.
+
+UPDATE p
+SET p.list_price =  (
+	SELECT AVG(p2.list_price)
+	FROM products AS p2
+	WHERE p2.category_id = p.category_id
+	)
+FROM products AS p;
+
+
+
+Categorize products by price
+
+UPDATE products
+SET category_label
+	CASE
+		WHEN list_price > 2000 THEN 'High'
+		WHEN list_price > 1000 THEN 'Medium'
+		ELSE 'Low'
+	END;
+
+
+Update only top 5 product prices
+
+UPDATE TOP (5) products
+SET list_price = list_price * 1.10;
+
+
+
+Apply discount to products that are not selling
+
+UDPATE p
+SET p.list_price = p.list_price * 0.9
+FROM products AS p
+WHERE p.product_id NOT EXISTS (
+		SELECT 1
+		FROM order_items AS oi
+		WHERE oi.product_id = p.product_id
+	);
+
+
+ALTER statement
+~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+This statement changes the structure of an existing table.
+
+
+Syntax:
+ALTER TABLE table_name
+ACTION;
+
+
+Add column (Most common)
+~~~~~~~~~~~~~~~~~~~~~~~~
+ALTER TABLE products
+ADD category_label VARCHAR(10);
+
+ALTER TABLE customers
+ADD date_of_birth DATE;
+
+ALTER TABLE customers
+ADD total_orders INT;
+
+The new columns contains NULL values by default.
+
+UPDATE products
+SET category_label
+	CASE
+		WHEN list_price > 2000 THEN 'High'
+		WHEN list_price > 1000 THEN 'Medium'
+		ELSE 'Low'
+	END;
+
+
+Add multiple columns
+
+ALTER TABLE customers
+ADD loyalty_points INT,
+	active BIT;
+
+
+ALTER COLUMNS 
+~~~~~~~~~~~~~
+ALTER TABLE products
+ALTER COLUMN list_price DECIMAL(10,2);
+
+ALTER TABLE stores
+ALTER COLUMN zip_code VARCHAR(6);
+
+ALTER TABLE customers
+ALTER COLUMN first_name VARCHAR(100);
+
+
+Note: You cannot reduce the number of characters for text column using ALTER COLUMN.
+
+
+DROP column
+~~~~~~~~~~~
+- Delete a column permanently
+- You cannot undo it
+
+ALTER TABLE customers
+DROP COLUMN loyalty_points;
+
+
+ADD CONSTRAINT
+~~~~~~~~~~~~~~
+ALTER TABLE products
+ADD CONSTRAINT pk_products
+PRIMARY KEY (product_id);
+
+ALTER TABLE orders
+ADD CONSTRAINT fk_orders_customers
+FOREIGN KEY (customer_id)
+REFERENCES customers (customer_id);
+
+ALTER TABLE customers
+ADD CONSTRAINT uq_mail
+UNIQUE (email);
+
+ALTER TABLE products
+ADD CONSTRAINT ck_list_price
+CHECK (list_price > 0);
+
+ALTER TABLE products
+ADD CONSTRAINT dft_category_label
+DEFAULT 'Medium' FOR category_label;
+
+
+DROP CONSTRAING
+~~~~~~~~~~~~~~~
+ALTER TABLE orders
+DROP CONSTRAINT fk_orders_customers;
+
+
+RENAME COLUMN
+~~~~~~~~~~~~~
+EXEC sp_rename
+'customers.first_name', 'fname', 'COLUMN';
+
+
+RENAME TABLE
+~~~~~~~~~~~~
+EXEC sp_rename
+'customers', 'clients';
+
+
+
+Alter an existing table
+
+ALTER TABLE customers
+ADD middle_name VARCHAR(25)
+DEFAULT 'Kumar';
+
+
+Add total prices column:
+
+ALTER TABLE order_items
+ADD total_price AS (quantity * list_price);
+
+
+
+DELETE / TRUNCATE / DROP statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DELETE 		- Deletes rows
+TRUNCATE 	- Deletes all rows (fast)
+DROP 		- Drops table
+
+
+DELETE (Row-by-row removal)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-> Removes specific rows
+
+Syntax:
+DELETE FROM table_name
+WHERE condition;
+
+
+Delete a specific customer.
+
+DELETE FROM customers
+WHERE customer_id = 10;
+
+
+Delete all the orders of a customer.
+
+DELETE FROM orders
+WHERE customer_id = 10;
+
+
+Delete orders older than a specific date.
+
+DELETE FROM orders
+WHERE order_date < '2016-05-01';
+
+
+DELETE:
+- Uses WHERE
+- Deletes row-by-row
+- Can be rolled back
+- Triggers are fired
+
+
+DELETE with JOINS
+~~~~~~~~~~~~~~~~~
+DELETE o
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+WHERE c.city = 'Old City';
+
+
+DELETE with SUBQUERY
+~~~~~~~~~~~~~~~~~~~~
+Delete customers without any orders place.
+
+DELETE FROM customers
+WHERE customer_id NOT IN (
+		SELECT customer_id
+		FROM orders
+		);
+
+
+TRUNCATE (Fast Bulk Delete)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-> Removes all rows instantly.
+
+TRUNCATE TABLE table_name;
+
+TRUNCATE TABLE customers;
+
+Cannot use truncate if:
+- The table has foreign key
+- Table is referenced
+
+
+DROP (Destroy Table)
+~~~~~~~~~~~~~~~~~~~~~
+-> Removes entire table structure + data
+
+DROP TABLE table_name;
+
+DROP TABLE customers;
+
+
+
+Delete unsold products.
+
+DELETE FROM products
+WHERE product_id NOT IN (
+		SELECT product_id
+		FROM orders
+		);
+
+
+FOREIGN KEY CONSTRAINT IMPACT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Cannot parent row if the child exists
+
+DELETE FROM customers
+WHERE customer_id = 1;
+
+Solution:
+DELETE FROM orders
+WHERE customer_id = 1;
+DELETE FROM customers
+WHERE customer_id = 1;
+
+
+DELETE IN BATCHES (Production)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+WHILE 1 = 1
+BEGIN
+	DELETE TOP (1000)
+	FROM orders
+	WHERE order_date < '2017-04-01';
+
+	IF @@ROWCOUNT = 0 BREAK;
+END
+
+
+
+VIEWS
+~~~~~~~~
+~~~~~~~~
+A 'view' is a virtual table create from a query:
+- View doesn't store the data physically
+- It always shows the latest data
+- It simplifies complex queries
+
+Syntax:
+CREATE VIEW view_name AS
+SELECT column
+FROM table
+WHERE condition;
+
+
+Reason for using views:
+- Avoid rewriting complex joins
+- Improve readability
+- Provide security (hide sensitive data)
+
+
+Customer Basic Info View:
+
+CREATE VIEW customer_basic_info AS
+SELECT
+	customer_id, first_name, last_name, city, state
+FROM
+	customers;
+
+
+
+Orders with customers info.
+
+CREATE VIEW customer_orders AS
+SELECT
+	o.order_id, o.order_date,
+	c.customer_id, c.first_name, c.last_name, c.city, c.state
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id;
+
+
+
+Sales Detail View
+
+CREATE VIEW sales_details AS
+SELECT
+	o.order_id, o.order_date,
+	c.first_name AS customer_name,
+	p.product_name,
+	b.brand_name,
+	cat.category_name,
+	oi.quantity, oi.list_price, oi.discount,
+	(oi.quantity * oi.list_price * ( 1- oi.discount)) AS total_price
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+JOIN brands b ON p.brand_id = b.brand_id
+JOIN categories cat ON p.category_id = cat.category_id;
+
+ 
+
+
 
 
 
