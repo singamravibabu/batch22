@@ -1240,6 +1240,115 @@ JOIN categories cat ON p.category_id = cat.category_id;
 
  
 
+Aggregated View
+~~~~~~~~~~~~~~~
+- Total Sales per Store
+
+CREATE VIEW store_sales_summary AS
+SELECT
+	s.store_id, s.store_name,
+	SUM(oi.quantity * oi.list_price * (1 - oi.discount)) AS total_sales
+FROM stores s
+JOIN orders o ON s.store_id = o.store_id
+JOIN order_items oi ON o.order_id = oi.order_id
+GROUP BY s.store_id, s.store_name;
+
+
+
+Stock availability
+
+CREATE VIEW product_stock AS
+SELECT
+	p.product_id, p.product_name,
+	s.store_name, st.quantity
+FROM stocks st
+JOIN products p ON st.product_id = p.product_id
+JOIN stores s ON st.store_id = s.store_id;
+
+
+
+Stored Procedures
+~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+A stored procedure (sp) is:
+- A pre-written SQL program
+- Stored inside a database
+- It can accept parameters
+- It can return data or perform some actions
+
+
+Syntax:
+CREATE PROCEDURE procedure_name AS
+BEGIN
+	-- sql statements
+END;
+
+
+Execute:
+EXEC procedure_name;
+
+
+Get all customers:
+
+CREATE PROCEDURE GetAllCustomers AS
+BEGIN
+	SELECT * FROM customers;
+END;
+
+
+
+Stored procedure with parameters.
+
+Get customer by id:
+
+CREATE PROCEDURE GetCustomerById @customer_id INT AS
+BEGIN
+	SELECT *
+	FROM customers
+	WHERE customer_id = @customer_id;
+END;
+
+
+EXEC GetCustomerById @customer_id = 1;
+EXEC GetCustomerById 1;
+
+
+
+Filtering orders by date.
+
+CREATE PROCEDURE GetOrdersByDate
+	@StartDate DATE,
+	@EndDate DATE
+AS
+BEGIN
+	SELECT *
+	FROM orders
+	WHERE order_date BETWEEN @StartDate AND @EndDate;
+END;
+
+EXEC GetOrdersByDate '2016-01-01', '2016-03-31';
+
+
+
+UPDATE using stored procedure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE PROCEDURE UpdateCustomerEmail
+	@customer_id INT,
+	@new_email VARCHAR(255)
+AS
+BEGIN
+	UPDATE customers
+	SET email = @new_email
+	WHERE customer_id = @customer_id;
+END;
+
+
+
+TRIGGERS
+~~~~~~~~~
+~~~~~~~~~
+A special stored procedure that automatically executes when an event occurs (INSERT, ALTER, UPDATE).
+
 
 
 
