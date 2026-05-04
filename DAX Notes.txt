@@ -1,0 +1,435 @@
+POWER BI
+~~~~~~~~~~
+~~~~~~~~~~
+Two components of power bi:
+- power bi desktop
+- power bi service (premium)
+
+
+Three objects in power bi:
+- table
+- column
+- measure
+
+We can create objects (generate) using DAX expression.
+
+How to write an expression:
+Name = Formula
+Object = Formula
+
+Referring an object in formula (expression):
+Table:	TableName
+Column: [columnName],	TableName[columnName]
+Measure: [measureName]
+
+
+
+Calendar table
+---------------
+Date: 1/1/2017 to 31/12/2019 (1095)
+
+CALENDAR ( start_date, end_date )
+	- generates sequence of dates
+
+DATE( year, month, day )
+	returns specified date
+
+Calendar = CALENDAR( DATE(2017, 1, 1), DATE(2019, 12, 31) )
+
+
+29-04-2026
+	Year - 2026
+	MonthNum - 4
+	Day - 29
+	Weekday - Wednesday
+	Month - April
+	Weeknum - 17 (1 - 53)
+	WeekdayNum 4 (1 - 7)
+
+
+Year column
+------------
+YEAR( date_value )
+	- Returns year number from the specified date
+
+YEAR ( [Date] )
+
+Year = YEAR( [Date] )
+
+
+
+Month column
+------------
+FORMAT( value, format_code )
+
+format_codes:
+	d	- day number (1 - 31)
+	dd 	- day number with leading zero (01 - 31)
+	ddd	- short weekday name ( Sun, Mon, ..., Sat )
+	dddd	- full weekday name (Sunday, Monday, ..., Saturday)
+	m	- month number (1 - 12)
+	mm	- month number with leading zero (01 - 12)
+	mmm	- short month name (Jan, Feb, Mar, ..., Dec)
+	mmmm	- full month name (January, February, March, ...)
+	yy	- two digit year number (26)
+	yyyy	- four digit year number (2026)
+	q	- Quarter
+
+
+Month = FORMAT( [Date], "MMMM" )
+
+
+MonthNum column
+---------------
+MONTH( date_value )
+	Extracts month number from the specified date value.
+
+MonthNum = MONTH ( [Date] )
+
+
+Day column
+-----------
+DAY ( date_value )
+	- Extracts day number from the specified date value.
+
+Day = DAY( [Date] )
+
+
+Weeknum column
+----------------
+WEEKNUM ( date_value )
+	- Extracts week number of the specified date
+
+Weeknum = WEEKNUM ( [Date] )
+
+
+Weekday column
+-------------
+Weekday = FORMAT( [Date], "DDDD" )
+
+
+WeekdayNum column
+-----------------
+WEEKDAY ( [Date] )
+	Extracts weekday number:
+		Sun - Sat ( 1 - 7)
+WeekdayNum = WEEKDAY ( [Date], 2 )
+	Extracts weekday number:
+		Mon - Sun ( 1 - 7 )
+
+
+IsWorkday column
+-----------------
+IF( condition, if_true, if_false )
+
+IsWorkday = IF ( [WeekdayNum] <= 5, 1, 0 )
+
+
+
+FORMATTING TABLES
+~~~~~~~~~~~~~~~~~
+
+Year column is Text
+	2017, 2018, 2019
+	Asc: 2017, 2018, 2019
+	Desc: 2019, 2018, 2017
+
+
+Month columns is Text (NO)
+	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+	Asc: 1, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9
+
+
+GitHub.com/ThinkAlgoClub/files
+
+
+
+Billable hours -> for which client pays
+Non-billable  hours -> for which client doesn't pay
+
+
+Utilization = Billable hours
+
+% Uitlization = Billable hours / total hours (80%)
+
+
+DAX - Data Analysis eXpression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Two types of expressions:
+	- Calculated columns
+		Expressions used to create columns in a table
+		Uses row context
+	- Measures
+		Expressions used in Visuals (Report View)
+		Uses row and filter context
+
+
+Calculated columns
+--------------------
+- By default, uses row-context
+- Don't use aggregate functions for calculated columns (except for ad-hoc purposes)
+
+Column = SUM( [Hours] )
+
+Column 2 = [Hours] / [TotalHours]
+
+
+Total Billable Hours / Total Hours
+
+30 / 40 -> 75% (0.75)
+
+
+
+Column 3 =
+SUMX(
+	FILTER (
+			ALL('Hours'),
+			[Category] = "Billable" && [EmployeeID] = EARLIER( [EmployeeID])
+		),
+	[Hours]
+)
+
+
+Functions that end with 'X' such as SUMX, AVERAGEX, MINX, MAXX, COUNTAX, ... are iterator functions.
+
+
+= SUMX( table, expression )
+	-> The expression is executed for each row of the table
+	-> The outcome of all the executions is aggregated
+
+= FILTER ( table, filter1, filter2, filter3, ... )
+	-> table is filtered based on the specified filters and creates a virtual table
+
+= ALL ( table )
+	-> Removes all the filters from the table:
+		filters: visual, slicer, and filters pane
+
+
+
+TotalRows = COUNTROWS( table )
+
+
+TotalRows = COUNTROWS( 'Hours' )
+Grand Total Rows = COUNTROWS( ALL ( 'Hours' ) )
+
+
+Column 4 =
+SUMX(
+	FILTER (
+			ALL('Hours'),
+			[EmployeeID] = EARLIER( [EmployeeID])
+		),
+	[Hours]
+)
+
+
+
+Column 3 -> Total Billable Hours
+Column 4 -> Total Hours
+
+Total Billable Hours / Total Hours
+
+Column 5 = [Column 3] / [Column 4]
+
+Column 5 = DIVIDE ( [Column 3], [Column 4] )
+
+
+
+Two types of tables
+===================
+1. Fact table
+	Answers the question: What?
+	It is always on the many side of the relationship
+	It is filtered by dimension tables
+	Most probably this table changes frequently
+2. Dimension table
+	Answers the question: How?
+	It filters the fact table
+	Most probably these tables don't change frequently
+3. Snowflake
+	A dimension table that is not directly related to fact table
+	But sometimes we can integrate snowflakes into a dimension
+
+
+
+
+Measures
+`````````````
+
+Total Billable Hours =
+SUMX(
+	FILTER( 'Hours', 'Hours'[Category] = "Billable" ),
+	'Hours'[Hours]
+)
+
+Total Hours =
+SUMX(
+	'Hours',
+	'Hours'[Hours]
+)
+
+% Utilization = DIVIDE ( [Total Billable Hours], [Total Hours] )
+
+
+
+Relationship between Calendar and Budgets & Forecasts tables
+-------------------------------------------------------------
+Add a column to Budgets and Forecasts:
+	MonthYear = [Month] & "2017"
+
+Add similar column to Calendar
+	MonthYear = LEFT( [Month], 3 ) & [Year]
+
+& - concatenation operator (text joining)
+&& - AND operator
+|| - OR operator
+
+
+Create Table: MonthYears
+-------------------------
+MonthYears = DISTINCT( Calendar[MonthYear] )
+
+
+Hours table
+-------------
+- Total reported hours
+
+1 week:
+	total hours = 30 (reported hours)
+	billable hours = 20
+	% utilization = 20/30 = 0.66 (66%)
+
+In the Calendar table, create a column:
+	WorkHours = IF( [IsWorkday] = 1, 8, 0 )
+
+
+
+
+
+
+Total Hours = SUM( Calendar[WorkHours] )
+
+Total Billable Hours = 
+SUMX(
+	FILTER( 'Hours', 'Hours'[Category] = "Billable" ),
+	'Hours'[Hours]
+)
+
+% Utilization = DIVIDE ( [Total Billable Hours], [Total Hours] )
+
+
+[Total Hours] -> [Total Hours by Employee]
+
+Total Hours by Employee = SUM( Calendar[WorkHours] )
+
+
+The updated following measure needs to be changed:
+% Utilization = DIVIDE ( [Total Billable Hours], [Total Hours by Employee] )
+
+
+Total Hours =
+IF ( HASONEVALUE( People[Name] ),
+	[Total Hours by Employee],
+    SUMX(
+	SUMMARIZE(
+		'People', People[Name], "__Hours", [Total Hours by Employee]
+		),
+	[__Hours]
+	)
+)
+
+
+SUMMARIZE() create a temporary table:
+------------------------------------
+Name	__Hours
+- - - 	- - - -
+Arun	100
+Anil	80
+Sunder	125
+Vinod	95
+
+
+% Utilization = DIVIDE ( [Total Billable Hours], [Total Hours] )
+
+
+Having zero for missing values:
+
+% Utilization = 
+VAR __utilization = DIVIDE ( [Total Billable Hours], [Total Hours] )
+RETURN
+	__utilization + 0
+
+
+
+The table / dashboard shows plenty of blank rows, to fix it use the following DAX expression:
+
+% Utilization =
+VAR __utilization = DIVIDE( [Total Billable Hours], [Total Hours] )
+VAR __days = COUNTROWS( Hours )
+RETURN
+IF(
+	ISBLANK(__days),
+	BLANK(),
+	__utilization + 0
+)
+
+
+
+TROUBLESHOOTING
+~~~~~~~~~~~~~~~
+- Boundary cases
+
+- Slicing
+
+
+
+The 'SWITCH' function
+---------------------
+SWITCH( expression,
+	value1, result1,
+	value2, result2,
+	value3, result3,
+	...
+	else
+)
+
+
+
+Total Hours =
+SWITCH(	MAX( 'People'[EmployeeType] ),
+	"HOURLY", [Total Billable Hours],
+	"SUB-CONTRACTOR", [Total Billable Hours],
+	"SALARY",
+	IF(
+		HASONEVALUE( People[Name] ),
+		[Total Hours by Employee],
+		SUMX(
+			SUMMARIZE(
+				'People', People[Name],
+				"__Hours", [Total Hours by Employee]
+			), [__Hours]
+		)
+	), BLANK()
+)
+
+
+
+SUMMARIZE(
+				'People', People[Name],
+				"__Hours", [Total Hours by Employee]
+			)
+
+
+Name	__Hours
+-----	-------
+Shiva	100
+Kumar	120
+Prasad	80
+Naveen	150
+Uday	50
+
+
+
+
+
+
